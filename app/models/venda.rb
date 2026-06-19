@@ -7,7 +7,7 @@ class Venda < ApplicationRecord
   belongs_to :funcionario
   belongs_to :caixa
   belongs_to :veiculo, optional: true
-  has_many :venda_itens, dependent: :destroy
+  has_many :venda_itens, class_name: "VendaItem", dependent: :destroy
   has_many :pagamentos, dependent: :restrict_with_exception
   has_many :produtos, through: :venda_itens
   has_many :combustiveis, through: :venda_itens

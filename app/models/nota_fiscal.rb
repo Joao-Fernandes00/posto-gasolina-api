@@ -4,7 +4,7 @@ class NotaFiscal < ApplicationRecord
   STATUSES = %w[emitida cancelada recebida].freeze
 
   belongs_to :fornecedor
-  has_many :nota_fiscal_itens, dependent: :destroy
+  has_many :nota_fiscal_itens, class_name: "NotaFiscalItem", dependent: :destroy
   has_many :produtos, through: :nota_fiscal_itens
 
   scope :recebidas, -> { where(status: "recebida") }

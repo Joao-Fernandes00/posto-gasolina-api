@@ -4,9 +4,9 @@ class Produto < ApplicationRecord
   belongs_to :categoria
   has_one :oleo, dependent: :destroy
   has_one :estoque, dependent: :destroy
-  has_many :nota_fiscal_itens, dependent: :restrict_with_exception
+  has_many :nota_fiscal_itens, class_name: "NotaFiscalItem", dependent: :restrict_with_exception
   has_many :notas_fiscais, through: :nota_fiscal_itens
-  has_many :venda_itens, dependent: :restrict_with_exception
+  has_many :venda_itens, class_name: "VendaItem", dependent: :restrict_with_exception
   has_many :vendas, through: :venda_itens
 
   scope :active, -> { where(ativo: true) }
