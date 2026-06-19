@@ -8,6 +8,7 @@ class Produto < ApplicationRecord
   has_many :notas_fiscais, through: :nota_fiscal_itens
   has_many :venda_itens, class_name: "VendaItem", dependent: :restrict_with_exception
   has_many :vendas, through: :venda_itens
+  has_many :movimentacao_estoques, dependent: :restrict_with_exception
 
   scope :active, -> { where(ativo: true) }
   scope :critical_stock, -> { joins(:estoque).where("estoques.quantidade <= estoques.quantidade_minima") }

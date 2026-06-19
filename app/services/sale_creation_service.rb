@@ -160,6 +160,7 @@ class SaleCreationService
     @payments = payment_params.map do |payment|
       {
         caixa: cash_register,
+        forma_pagamento: FormaPagamento.find_by(chave: payment[:forma]),
         forma: payment[:forma],
         valor: money(parse_decimal!(payment[:valor], "valor")),
         status: payment[:status].presence || "aprovado",

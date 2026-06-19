@@ -1,0 +1,102 @@
+erDiagram
+  ENDERECOS ||--o{ FUNCIONARIOS : endereco
+  ENDERECOS ||--o{ FORNECEDORES : endereco
+  ENDERECOS ||--o{ CLIENTES : endereco
+  CARGOS ||--o{ FUNCIONARIOS : possui
+  CARGOS ||--o{ CARGO_PERMISSOES : recebe
+  PERMISSOES ||--o{ CARGO_PERMISSOES : concede
+  FUNCIONARIOS ||--o{ ESCALAS : trabalha
+  TURNOS ||--o{ ESCALAS : organiza
+  ESCALAS ||--|| CAIXAS : abre
+  FUNCIONARIOS ||--o{ CAIXAS : responsavel
+  CAIXAS ||--o| FECHAMENTO_CAIXAS : fecha
+  FUNCIONARIOS ||--o{ FECHAMENTO_CAIXAS : confere
+  FUNCIONARIOS ||--o{ AUDITORIA_EVENTOS : executa
+
+  COMBUSTIVEIS ||--o{ HISTORICO_PRECOS : precifica
+  COMBUSTIVEIS ||--o{ TANQUES : abastece
+  TANQUES ||--o{ BICOS : alimenta
+  BOMBAS ||--o{ BICOS : contem
+  TANQUES ||--o{ MANUTENCOES : manutencao
+  BOMBAS ||--o{ MANUTENCOES : manutencao
+  BICOS ||--o{ MANUTENCOES : manutencao
+  BICOS ||--o{ AFERICOES : afericao
+  FUNCIONARIOS ||--o{ AFERICOES : realiza
+  BICOS ||--o{ LEITURAS_ENCERRANTES : leitura
+  FUNCIONARIOS ||--o{ LEITURAS_ENCERRANTES : registra
+  BICOS ||--o{ CALIBRACOES_BICOS : calibracao
+  FUNCIONARIOS ||--o{ CALIBRACOES_BICOS : realiza
+
+  CATEGORIAS ||--o{ PRODUTOS : classifica
+  PRODUTOS ||--|| ESTOQUES : controla
+  PRODUTOS ||--o| OLEOS : detalha
+  PRODUTOS ||--o{ MOVIMENTACAO_ESTOQUES : movimenta
+  FUNCIONARIOS ||--o{ MOVIMENTACAO_ESTOQUES : registra
+  FORNECEDORES ||--o{ NOTAS_FISCAIS : emite
+  NOTAS_FISCAIS ||--o{ NOTA_FISCAL_ITENS : possui
+  PRODUTOS ||--o{ NOTA_FISCAL_ITENS : comprado
+
+  CLIENTES ||--o| CLIENTE_PESSOAS_FISICAS : identifica
+  CLIENTES ||--o| CLIENTE_PESSOAS_JURIDICAS : identifica
+  CLIENTES ||--o{ FROTAS : possui
+  CLIENTES ||--o{ VEICULOS : possui
+  FROTAS ||--o{ VEICULOS : agrupa
+  CLIENTES ||--o{ VENDAS : compra
+  FUNCIONARIOS ||--o{ VENDAS : vende
+  CAIXAS ||--o{ VENDAS : recebe
+  VEICULOS ||--o{ VENDAS : abastece
+  VENDAS ||--o| CUPONS_FISCAIS : emite
+  VENDAS ||--o{ VENDA_ITENS : possui
+  PRODUTOS ||--o{ VENDA_ITENS : vendido
+  COMBUSTIVEIS ||--o{ VENDA_ITENS : vendido
+  BICOS ||--o{ VENDA_ITENS : abastece
+  TANQUES ||--o{ MOVIMENTACAO_TANQUES : movimenta
+  COMBUSTIVEIS ||--o{ MOVIMENTACAO_TANQUES : movimenta
+  VENDA_ITENS ||--o{ MOVIMENTACAO_TANQUES : gera
+  VENDAS ||--o{ PAGAMENTOS : recebe
+  CAIXAS ||--o{ PAGAMENTOS : caixa
+  FORMAS_PAGAMENTO ||--o{ PAGAMENTOS : classifica
+  CLIENTES ||--o{ CONTAS_RECEBER : deve
+  VENDAS ||--o| CONTAS_RECEBER : gera
+  CONTAS_RECEBER ||--o{ PARCELAS_RECEBER : parcela
+
+  ENDERECOS { bigint id PK }
+  CARGOS { bigint id PK }
+  PERMISSOES { bigint id PK }
+  CARGO_PERMISSOES { bigint id PK }
+  FUNCIONARIOS { bigint id PK }
+  TURNOS { bigint id PK }
+  ESCALAS { bigint id PK }
+  CAIXAS { bigint id PK }
+  FECHAMENTO_CAIXAS { bigint id PK }
+  AUDITORIA_EVENTOS { bigint id PK }
+  COMBUSTIVEIS { bigint id PK }
+  HISTORICO_PRECOS { bigint id PK }
+  TANQUES { bigint id PK }
+  BOMBAS { bigint id PK }
+  BICOS { bigint id PK }
+  MANUTENCOES { bigint id PK }
+  AFERICOES { bigint id PK }
+  LEITURAS_ENCERRANTES { bigint id PK }
+  CALIBRACOES_BICOS { bigint id PK }
+  CATEGORIAS { bigint id PK }
+  PRODUTOS { bigint id PK }
+  ESTOQUES { bigint id PK }
+  OLEOS { bigint id PK }
+  MOVIMENTACAO_ESTOQUES { bigint id PK }
+  FORNECEDORES { bigint id PK }
+  NOTAS_FISCAIS { bigint id PK }
+  NOTA_FISCAL_ITENS { bigint id PK }
+  CLIENTES { bigint id PK }
+  CLIENTE_PESSOAS_FISICAS { bigint id PK }
+  CLIENTE_PESSOAS_JURIDICAS { bigint id PK }
+  FROTAS { bigint id PK }
+  VEICULOS { bigint id PK }
+  VENDAS { bigint id PK }
+  CUPONS_FISCAIS { bigint id PK }
+  VENDA_ITENS { bigint id PK }
+  MOVIMENTACAO_TANQUES { bigint id PK }
+  FORMAS_PAGAMENTO { bigint id PK }
+  PAGAMENTOS { bigint id PK }
+  CONTAS_RECEBER { bigint id PK }
+  PARCELAS_RECEBER { bigint id PK }

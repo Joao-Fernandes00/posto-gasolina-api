@@ -6,6 +6,8 @@ class Bico < ApplicationRecord
   has_one :combustivel, through: :tanque
   has_many :manutencoes, dependent: :restrict_with_exception
   has_many :afericoes, dependent: :restrict_with_exception
+  has_many :leituras_encerrantes, dependent: :restrict_with_exception
+  has_many :calibracoes_bicos, dependent: :restrict_with_exception
   has_many :venda_itens, class_name: "VendaItem", dependent: :restrict_with_exception
 
   scope :ativos, -> { where(ativo: true) }

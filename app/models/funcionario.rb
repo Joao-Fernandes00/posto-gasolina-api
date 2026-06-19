@@ -6,6 +6,11 @@ class Funcionario < ApplicationRecord
   has_many :afericoes, dependent: :restrict_with_exception
   has_many :escalas, dependent: :restrict_with_exception
   has_many :caixas, dependent: :restrict_with_exception
+  has_many :fechamento_caixas, dependent: :restrict_with_exception
+  has_many :movimentacao_estoques, dependent: :nullify
+  has_many :leituras_encerrantes, dependent: :restrict_with_exception
+  has_many :calibracoes_bicos, dependent: :restrict_with_exception
+  has_many :auditoria_eventos, dependent: :nullify
   has_many :vendas, dependent: :restrict_with_exception
 
   scope :ativos, -> { where(ativo: true) }

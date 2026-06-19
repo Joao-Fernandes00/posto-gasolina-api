@@ -5,6 +5,7 @@ class Tanque < ApplicationRecord
   has_many :bicos, dependent: :restrict_with_exception
   has_many :bombas, through: :bicos
   has_many :manutencoes, dependent: :restrict_with_exception
+  has_many :movimentacao_tanques, dependent: :restrict_with_exception
 
   scope :ativos, -> { where(ativo: true) }
 

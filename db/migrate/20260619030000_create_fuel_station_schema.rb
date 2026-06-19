@@ -210,6 +210,22 @@ class CreateFuelStationSchema < ActiveRecord::Migration[7.2]
     add_check_constraint :caixas, "fechado_em IS NULL OR fechado_em >= aberto_em", name: "chk_caixas_periodo"
     add_check_constraint :caixas, "status IN ('aberto', 'fechado', 'cancelado')", name: "chk_caixas_status"
 
+    create_table :fechamento_caixas do |t|
+      t.references :caixa, null: false, foreign_key: { to_table: :caixas }, index: false
+      t.references :funcionario, null: false, foreign_key: { to_table: :funcionarios }
+      t.datetime :fechado_em, null: false
+      t.decimal :valor_informado, precision: 14, scale: 2, null: false
+      t.decimal :valor_sistema, precision: 14, scale: 2, null: false
+      t.decimal :diferenca, precision: 14, scale: 2, null: false, default: 0
+      t.text :observacoes
+
+      t.timestamps
+    end
+
+    add_index :fechamento_caixas, :caixa_id, unique: true
+    add_check_constraint :fechamento_caixas, "valor_informado >= 0", name: "chk_fechamento_caixas_valor_informado"
+    add_check_constraint :fechamento_caixas, "valor_sistema >= 0", name: "chk_fechamento_caixas_valor_sistema"
+
     create_table :categorias do |t|
       t.string :nome, null: false
       t.text :descricao
@@ -262,6 +278,24 @@ class CreateFuelStationSchema < ActiveRecord::Migration[7.2]
     add_index :estoques, :produto_id, unique: true
     add_check_constraint :estoques, "quantidade >= 0", name: "chk_estoques_quantidade"
     add_check_constraint :estoques, "quantidade_minima >= 0", name: "chk_estoques_quantidade_minima"
+
+    create_table :movimentacao_estoques do |t|
+      t.references :produto, null: false, foreign_key: { to_table: :produtos }
+      t.references :funcionario, foreign_key: { to_table: :funcionarios }
+      t.string :tipo, null: false
+      t.decimal :quantidade, precision: 12, scale: 3, null: false
+      t.decimal :saldo_apos, precision: 12, scale: 3, null: false
+      t.string :origem
+      t.text :observacoes
+      t.datetime :movimentada_em, null: false
+
+      t.timestamps
+    end
+
+    add_index :movimentacao_estoques, :movimentada_em
+    add_check_constraint :movimentacao_estoques, "tipo IN ('entrada', 'saida', 'ajuste')", name: "chk_movimentacao_estoques_tipo"
+    add_check_constraint :movimentacao_estoques, "quantidade <> 0", name: "chk_movimentacao_estoques_quantidade"
+    add_check_constraint :movimentacao_estoques, "saldo_apos >= 0", name: "chk_movimentacao_estoques_saldo"
 
     create_table :fornecedores do |t|
       t.references :endereco, foreign_key: { to_table: :enderecos }
@@ -404,6 +438,104 @@ class CreateFuelStationSchema < ActiveRecord::Migration[7.2]
     add_check_constraint :vendas, "desconto <= subtotal", name: "chk_vendas_desconto_subtotal"
     add_check_constraint :vendas, "status IN ('aberta', 'finalizada', 'cancelada')", name: "chk_vendas_status"
 
+    create_table :formas_pagamento do |t|
+      t.string :chave, null: false
+      t.string :nome, null: false
+      t.boolean :ativo, null: false, default: true
+
+      t.timestamps
+    end
+
+    add_index :formas_pagamento, :chave, unique: true
+
+    create_table :cupons_fiscais do |t|
+      t.references :venda, null: false, foreign_key: { to_table: :vendas }, index: false
+      t.string :numero, null: false
+      t.string :serie, null: false
+      t.string :chave_acesso, null: false, limit: 44
+      t.datetime :emitido_em, null: false
+      t.decimal :valor_total, precision: 14, scale: 2, null: false
+      t.string :status, null: false, default: "emitido"
+
+      t.timestamps
+    end
+
+    add_index :cupons_fiscais, :venda_id, unique: true
+    add_index :cupons_fiscais, :chave_acesso, unique: true
+    add_index :cupons_fiscais, %i[numero serie], unique: true
+    add_check_constraint :cupons_fiscais, "char_length(chave_acesso) = 44", name: "chk_cupons_fiscais_chave_length"
+    add_check_constraint :cupons_fiscais, "valor_total >= 0", name: "chk_cupons_fiscais_valor_total"
+    add_check_constraint :cupons_fiscais, "status IN ('emitido', 'cancelado')", name: "chk_cupons_fiscais_status"
+
+    create_table :contas_receber do |t|
+      t.references :cliente, null: false, foreign_key: { to_table: :clientes }
+      t.references :venda, null: false, foreign_key: { to_table: :vendas }, index: false
+      t.string :numero, null: false
+      t.decimal :valor_total, precision: 14, scale: 2, null: false
+      t.decimal :saldo, precision: 14, scale: 2, null: false
+      t.date :vencimento_em, null: false
+      t.string :status, null: false, default: "aberta"
+
+      t.timestamps
+    end
+
+    add_index :contas_receber, :venda_id, unique: true
+    add_index :contas_receber, :numero, unique: true
+    add_index :contas_receber, :status
+    add_check_constraint :contas_receber, "valor_total >= 0", name: "chk_contas_receber_valor_total"
+    add_check_constraint :contas_receber, "saldo >= 0", name: "chk_contas_receber_saldo"
+    add_check_constraint :contas_receber, "saldo <= valor_total", name: "chk_contas_receber_saldo_total"
+    add_check_constraint :contas_receber, "status IN ('aberta', 'paga', 'vencida', 'cancelada')", name: "chk_contas_receber_status"
+
+    create_table :parcelas_receber do |t|
+      t.references :conta_receber, null: false, foreign_key: { to_table: :contas_receber }
+      t.integer :numero, null: false
+      t.decimal :valor, precision: 14, scale: 2, null: false
+      t.decimal :saldo, precision: 14, scale: 2, null: false
+      t.date :vencimento_em, null: false
+      t.datetime :paga_em
+      t.string :status, null: false, default: "aberta"
+
+      t.timestamps
+    end
+
+    add_index :parcelas_receber, %i[conta_receber_id numero], unique: true
+    add_index :parcelas_receber, :status
+    add_check_constraint :parcelas_receber, "numero > 0", name: "chk_parcelas_receber_numero"
+    add_check_constraint :parcelas_receber, "valor > 0", name: "chk_parcelas_receber_valor"
+    add_check_constraint :parcelas_receber, "saldo >= 0", name: "chk_parcelas_receber_saldo"
+    add_check_constraint :parcelas_receber, "saldo <= valor", name: "chk_parcelas_receber_saldo_valor"
+    add_check_constraint :parcelas_receber, "status IN ('aberta', 'paga', 'vencida', 'cancelada')", name: "chk_parcelas_receber_status"
+
+    create_table :leituras_encerrantes do |t|
+      t.references :bico, null: false, foreign_key: { to_table: :bicos }
+      t.references :funcionario, null: false, foreign_key: { to_table: :funcionarios }
+      t.decimal :encerrante_litros, precision: 14, scale: 3, null: false
+      t.datetime :lida_em, null: false
+      t.text :observacoes
+
+      t.timestamps
+    end
+
+    add_index :leituras_encerrantes, %i[bico_id lida_em], unique: true
+    add_check_constraint :leituras_encerrantes, "encerrante_litros >= 0", name: "chk_leituras_encerrantes_valor"
+
+    create_table :calibracoes_bicos do |t|
+      t.references :bico, null: false, foreign_key: { to_table: :bicos }
+      t.references :funcionario, null: false, foreign_key: { to_table: :funcionarios }
+      t.datetime :realizada_em, null: false
+      t.decimal :vazao_litros_minuto, precision: 10, scale: 3, null: false
+      t.decimal :desvio_percentual, precision: 8, scale: 4, null: false, default: 0
+      t.string :status, null: false, default: "aprovada"
+      t.text :observacoes
+
+      t.timestamps
+    end
+
+    add_index :calibracoes_bicos, %i[bico_id realizada_em], unique: true
+    add_check_constraint :calibracoes_bicos, "vazao_litros_minuto > 0", name: "chk_calibracoes_bicos_vazao"
+    add_check_constraint :calibracoes_bicos, "status IN ('aprovada', 'reprovada')", name: "chk_calibracoes_bicos_status"
+
     create_table :venda_itens do |t|
       t.references :venda, null: false, foreign_key: { to_table: :vendas }
       t.references :produto, foreign_key: { to_table: :produtos }
@@ -425,9 +557,28 @@ class CreateFuelStationSchema < ActiveRecord::Migration[7.2]
     add_check_constraint :venda_itens, "(produto_id IS NOT NULL AND combustivel_id IS NULL) OR (produto_id IS NULL AND combustivel_id IS NOT NULL)", name: "chk_venda_itens_tipo_item"
     add_check_constraint :venda_itens, "bico_id IS NULL OR combustivel_id IS NOT NULL", name: "chk_venda_itens_bico_combustivel"
 
+    create_table :movimentacao_tanques do |t|
+      t.references :tanque, null: false, foreign_key: { to_table: :tanques }
+      t.references :combustivel, null: false, foreign_key: { to_table: :combustiveis }
+      t.references :venda_item, foreign_key: { to_table: :venda_itens }
+      t.string :tipo, null: false
+      t.decimal :volume_litros, precision: 12, scale: 3, null: false
+      t.decimal :saldo_apos_litros, precision: 12, scale: 3, null: false
+      t.datetime :movimentada_em, null: false
+      t.text :observacoes
+
+      t.timestamps
+    end
+
+    add_index :movimentacao_tanques, :movimentada_em
+    add_check_constraint :movimentacao_tanques, "tipo IN ('entrada', 'saida', 'ajuste')", name: "chk_movimentacao_tanques_tipo"
+    add_check_constraint :movimentacao_tanques, "volume_litros <> 0", name: "chk_movimentacao_tanques_volume"
+    add_check_constraint :movimentacao_tanques, "saldo_apos_litros >= 0", name: "chk_movimentacao_tanques_saldo"
+
     create_table :pagamentos do |t|
       t.references :venda, null: false, foreign_key: { to_table: :vendas }
       t.references :caixa, null: false, foreign_key: { to_table: :caixas }
+      t.references :forma_pagamento, foreign_key: { to_table: :formas_pagamento }
       t.string :forma, null: false
       t.decimal :valor, precision: 14, scale: 2, null: false
       t.string :status, null: false, default: "pendente"
@@ -442,5 +593,20 @@ class CreateFuelStationSchema < ActiveRecord::Migration[7.2]
     add_check_constraint :pagamentos, "valor > 0", name: "chk_pagamentos_valor"
     add_check_constraint :pagamentos, "forma IN ('dinheiro', 'cartao_credito', 'cartao_debito', 'pix', 'voucher', 'boleto')", name: "chk_pagamentos_forma"
     add_check_constraint :pagamentos, "status IN ('pendente', 'aprovado', 'recusado', 'cancelado', 'estornado')", name: "chk_pagamentos_status"
+
+    create_table :auditoria_eventos do |t|
+      t.references :funcionario, foreign_key: { to_table: :funcionarios }
+      t.string :entidade, null: false
+      t.bigint :entidade_id
+      t.string :acao, null: false
+      t.jsonb :dados, null: false, default: {}
+      t.datetime :ocorrido_em, null: false
+
+      t.timestamps
+    end
+
+    add_index :auditoria_eventos, %i[entidade entidade_id]
+    add_index :auditoria_eventos, :ocorrido_em
+    add_check_constraint :auditoria_eventos, "acao IN ('criado', 'atualizado', 'removido', 'login', 'logout', 'erro')", name: "chk_auditoria_eventos_acao"
   end
 end

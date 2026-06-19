@@ -1,0 +1,456 @@
+openapi: 3.0.3
+info:
+  title: Posto Gasolina API
+  version: 1.0.0
+  description: API para gestao de posto de combustiveis, vendas e relatorios.
+servers:
+  - url: http://localhost:3000
+paths:
+  /up:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Aplicacao ativa
+  /api/v1/tipos_combustivel:
+    get:
+      summary: Lista combustiveis
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria combustivel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CombustivelInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/tanques:
+    get:
+      summary: Lista tanques
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria tanque
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TanqueInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/bombas:
+    get:
+      summary: Lista bombas
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria bomba
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BombaInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/bicos:
+    get:
+      summary: Lista bicos
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria bico
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BicoInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/funcionarios:
+    get:
+      summary: Lista funcionarios
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria funcionario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuncionarioInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/caixas_turno:
+    get:
+      summary: Lista caixas de turno
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria caixa de turno
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaixaInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/produtos:
+    get:
+      summary: Lista produtos
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria produto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProdutoInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/fornecedores:
+    get:
+      summary: Lista fornecedores
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria fornecedor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FornecedorInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/clientes:
+    get:
+      summary: Lista clientes
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria cliente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClienteInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/veiculos:
+    get:
+      summary: Lista veiculos
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria veiculo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VeiculoInput"
+      responses:
+        "201":
+          description: Criado
+  /api/v1/vendas:
+    get:
+      summary: Lista vendas
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Lista retornada
+    post:
+      summary: Cria venda finalizada com itens e pagamentos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VendaCreationInput"
+      responses:
+        "201":
+          description: Venda criada
+        "422":
+          description: Erro de validacao
+  /api/v1/{resource}/{id}:
+    get:
+      summary: Busca recurso por id
+      parameters:
+        - $ref: "#/components/parameters/Resource"
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Recurso retornado
+        "404":
+          description: Nao encontrado
+    patch:
+      summary: Atualiza recurso por id
+      parameters:
+        - $ref: "#/components/parameters/Resource"
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Recurso atualizado
+    delete:
+      summary: Remove recurso por id
+      parameters:
+        - $ref: "#/components/parameters/Resource"
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Removido
+  /relatorios/vendas-turno:
+    get:
+      summary: Relatorio de vendas por caixa e turno
+      parameters:
+        - name: inicio
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: fim
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Totais financeiros e litros agrupados por caixa e turno
+  /relatorios/estoque-critico:
+    get:
+      summary: Relatorio de estoque critico
+      responses:
+        "200":
+          description: Produtos ativos abaixo do estoque minimo, incluindo dados de oleo
+  /relatorios/extrato-frota:
+    get:
+      summary: Extrato mensal de frota
+      parameters:
+        - name: mes
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: "^[0-9]{4}-[0-9]{2}$"
+        - name: cliente_id
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Totais por cliente e veiculo
+        "400":
+          description: Mes invalido
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+    Resource:
+      name: resource
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [tipos_combustivel, tanques, bombas, bicos, funcionarios, caixas_turno, produtos, fornecedores, clientes, veiculos, vendas]
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    CombustivelInput:
+      type: object
+      required: [nome, tipo, codigo_anp]
+      properties:
+        nome: { type: string }
+        tipo: { type: string }
+        codigo_anp: { type: string }
+        unidade_medida: { type: string, default: litro }
+        ativo: { type: boolean }
+    TanqueInput:
+      type: object
+      required: [combustivel_id, codigo, capacidade_litros]
+      properties:
+        combustivel_id: { type: integer }
+        codigo: { type: string }
+        capacidade_litros: { type: number }
+        volume_atual_litros: { type: number }
+        ativo: { type: boolean }
+    BombaInput:
+      type: object
+      required: [codigo]
+      properties:
+        codigo: { type: string }
+        descricao: { type: string }
+        ativo: { type: boolean }
+    BicoInput:
+      type: object
+      required: [bomba_id, tanque_id, numero, codigo]
+      properties:
+        bomba_id: { type: integer }
+        tanque_id: { type: integer }
+        numero: { type: integer }
+        codigo: { type: string }
+        encerrante_litros: { type: number }
+        ativo: { type: boolean }
+    FuncionarioInput:
+      type: object
+      required: [cargo_id, nome, cpf, data_admissao]
+      properties:
+        endereco_id: { type: integer }
+        cargo_id: { type: integer }
+        nome: { type: string }
+        cpf: { type: string }
+        email: { type: string }
+        telefone: { type: string }
+        data_admissao: { type: string, format: date }
+        data_demissao: { type: string, format: date }
+        salario: { type: number }
+        ativo: { type: boolean }
+    CaixaInput:
+      type: object
+      required: [escala_id, funcionario_id, aberto_em]
+      properties:
+        escala_id: { type: integer }
+        funcionario_id: { type: integer }
+        aberto_em: { type: string, format: date-time }
+        fechado_em: { type: string, format: date-time }
+        valor_inicial: { type: number }
+        valor_final: { type: number }
+        status: { type: string, enum: [aberto, fechado, cancelado] }
+    ProdutoInput:
+      type: object
+      required: [categoria_id, nome, sku, preco_venda]
+      properties:
+        categoria_id: { type: integer }
+        nome: { type: string }
+        sku: { type: string }
+        codigo_barras: { type: string }
+        unidade_medida: { type: string }
+        preco_venda: { type: number }
+        custo_medio: { type: number }
+        ativo: { type: boolean }
+    FornecedorInput:
+      type: object
+      required: [razao_social, cnpj]
+      properties:
+        endereco_id: { type: integer }
+        razao_social: { type: string }
+        nome_fantasia: { type: string }
+        cnpj: { type: string }
+        inscricao_estadual: { type: string }
+        email: { type: string }
+        telefone: { type: string }
+        ativo: { type: boolean }
+    ClienteInput:
+      type: object
+      required: [tipo]
+      properties:
+        endereco_id: { type: integer }
+        tipo: { type: string, enum: [pf, pj] }
+        email: { type: string }
+        telefone: { type: string }
+        ativo: { type: boolean }
+    VeiculoInput:
+      type: object
+      required: [placa]
+      properties:
+        cliente_id: { type: integer }
+        frota_id: { type: integer }
+        placa: { type: string }
+        marca: { type: string }
+        modelo: { type: string }
+        ano: { type: integer }
+        cor: { type: string }
+        tipo: { type: string }
+        ativo: { type: boolean }
+    VendaCreationInput:
+      type: object
+      required: [funcionario_id, caixa_id, numero, itens, pagamentos]
+      properties:
+        cliente_id: { type: integer }
+        funcionario_id: { type: integer }
+        caixa_id: { type: integer }
+        veiculo_id: { type: integer }
+        numero: { type: string }
+        vendida_em: { type: string, format: date-time }
+        desconto: { type: number }
+        itens:
+          type: array
+          items:
+            type: object
+            properties:
+              produto_id: { type: integer }
+              combustivel_id: { type: integer }
+              bico_id: { type: integer }
+              descricao: { type: string }
+              quantidade: { type: number }
+              desconto: { type: number }
+        pagamentos:
+          type: array
+          items:
+            type: object
+            properties:
+              forma: { type: string, enum: [dinheiro, cartao_credito, cartao_debito, pix, voucher, boleto] }
+              valor: { type: number }
+              status: { type: string, enum: [pendente, aprovado, recusado, cancelado, estornado] }
+              pago_em: { type: string, format: date-time }
+              nsu: { type: string }
+              codigo_autorizacao: { type: string }

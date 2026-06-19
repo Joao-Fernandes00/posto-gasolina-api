@@ -95,6 +95,13 @@ class ReportsTest < ActionDispatch::IntegrationTest
     assert_equal 2, row.fetch("quantidade_vendas")
   end
 
+  test "extrato de frota retorna bad request para mes invalido" do
+    get "/relatorios/extrato-frota", params: { mes: "2026/06" }
+
+    assert_response :bad_request
+    assert_equal "bad_request", response.parsed_body.dig("error", "code")
+  end
+
   private
 
   def create_cash_context

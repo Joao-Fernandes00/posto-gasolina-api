@@ -5,6 +5,7 @@ class VendaItem < ApplicationRecord
   belongs_to :produto, optional: true
   belongs_to :combustivel, optional: true
   belongs_to :bico, optional: true
+  has_many :movimentacao_tanques, dependent: :restrict_with_exception
 
   validates :descricao, presence: true
   validates :quantidade, numericality: { greater_than: 0 }

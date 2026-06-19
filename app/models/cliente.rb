@@ -9,6 +9,7 @@ class Cliente < ApplicationRecord
   has_many :frotas, dependent: :restrict_with_exception
   has_many :veiculos, dependent: :restrict_with_exception
   has_many :vendas, dependent: :restrict_with_exception
+  has_many :contas_receber, dependent: :restrict_with_exception
 
   scope :ativos, -> { where(ativo: true) }
   scope :pessoas_fisicas, -> { where(tipo: "pf") }

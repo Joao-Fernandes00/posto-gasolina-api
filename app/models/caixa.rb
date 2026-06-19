@@ -5,6 +5,7 @@ class Caixa < ApplicationRecord
 
   belongs_to :escala
   belongs_to :funcionario
+  has_one :fechamento_caixa, dependent: :restrict_with_exception
   has_many :vendas, dependent: :restrict_with_exception
   has_many :pagamentos, dependent: :restrict_with_exception
 

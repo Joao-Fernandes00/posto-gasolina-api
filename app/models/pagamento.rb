@@ -6,6 +6,7 @@ class Pagamento < ApplicationRecord
 
   belongs_to :venda
   belongs_to :caixa
+  belongs_to :forma_pagamento, optional: true
 
   scope :aprovados, -> { where(status: "aprovado") }
   scope :pendentes, -> { where(status: "pendente") }

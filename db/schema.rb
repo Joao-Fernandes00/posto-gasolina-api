@@ -31,6 +31,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
     t.check_constraint "volume_indicado_litros >= 0::numeric", name: "chk_afericoes_volume_indicado"
   end
 
+  create_table "auditoria_eventos", force: :cascade do |t|
+    t.bigint "funcionario_id"
+    t.string "entidade", null: false
+    t.bigint "entidade_id"
+    t.string "acao", null: false
+    t.jsonb "dados", default: {}, null: false
+    t.datetime "ocorrido_em", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["entidade", "entidade_id"], name: "index_auditoria_eventos_on_entidade_and_entidade_id"
+    t.index ["funcionario_id"], name: "index_auditoria_eventos_on_funcionario_id"
+    t.index ["ocorrido_em"], name: "index_auditoria_eventos_on_ocorrido_em"
+    t.check_constraint "acao::text = ANY (ARRAY['criado'::character varying, 'atualizado'::character varying, 'removido'::character varying, 'login'::character varying, 'logout'::character varying, 'erro'::character varying]::text[])", name: "chk_auditoria_eventos_acao"
+  end
+
   create_table "bicos", force: :cascade do |t|
     t.bigint "bomba_id", null: false
     t.bigint "tanque_id", null: false
@@ -73,6 +88,23 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
     t.check_constraint "status::text = ANY (ARRAY['aberto'::character varying, 'fechado'::character varying, 'cancelado'::character varying]::text[])", name: "chk_caixas_status"
     t.check_constraint "valor_final IS NULL OR valor_final >= 0::numeric", name: "chk_caixas_valor_final"
     t.check_constraint "valor_inicial >= 0::numeric", name: "chk_caixas_valor_inicial"
+  end
+
+  create_table "calibracoes_bicos", force: :cascade do |t|
+    t.bigint "bico_id", null: false
+    t.bigint "funcionario_id", null: false
+    t.datetime "realizada_em", null: false
+    t.decimal "vazao_litros_minuto", precision: 10, scale: 3, null: false
+    t.decimal "desvio_percentual", precision: 8, scale: 4, default: "0.0", null: false
+    t.string "status", default: "aprovada", null: false
+    t.text "observacoes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bico_id", "realizada_em"], name: "index_calibracoes_bicos_on_bico_id_and_realizada_em", unique: true
+    t.index ["bico_id"], name: "index_calibracoes_bicos_on_bico_id"
+    t.index ["funcionario_id"], name: "index_calibracoes_bicos_on_funcionario_id"
+    t.check_constraint "status::text = ANY (ARRAY['aprovada'::character varying, 'reprovada'::character varying]::text[])", name: "chk_calibracoes_bicos_status"
+    t.check_constraint "vazao_litros_minuto > 0::numeric", name: "chk_calibracoes_bicos_vazao"
   end
 
   create_table "cargo_permissoes", force: :cascade do |t|
@@ -153,6 +185,44 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
     t.index ["nome"], name: "index_combustiveis_on_nome", unique: true
   end
 
+  create_table "contas_receber", force: :cascade do |t|
+    t.bigint "cliente_id", null: false
+    t.bigint "venda_id", null: false
+    t.string "numero", null: false
+    t.decimal "valor_total", precision: 14, scale: 2, null: false
+    t.decimal "saldo", precision: 14, scale: 2, null: false
+    t.date "vencimento_em", null: false
+    t.string "status", default: "aberta", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cliente_id"], name: "index_contas_receber_on_cliente_id"
+    t.index ["numero"], name: "index_contas_receber_on_numero", unique: true
+    t.index ["status"], name: "index_contas_receber_on_status"
+    t.index ["venda_id"], name: "index_contas_receber_on_venda_id", unique: true
+    t.check_constraint "saldo <= valor_total", name: "chk_contas_receber_saldo_total"
+    t.check_constraint "saldo >= 0::numeric", name: "chk_contas_receber_saldo"
+    t.check_constraint "status::text = ANY (ARRAY['aberta'::character varying, 'paga'::character varying, 'vencida'::character varying, 'cancelada'::character varying]::text[])", name: "chk_contas_receber_status"
+    t.check_constraint "valor_total >= 0::numeric", name: "chk_contas_receber_valor_total"
+  end
+
+  create_table "cupons_fiscais", force: :cascade do |t|
+    t.bigint "venda_id", null: false
+    t.string "numero", null: false
+    t.string "serie", null: false
+    t.string "chave_acesso", limit: 44, null: false
+    t.datetime "emitido_em", null: false
+    t.decimal "valor_total", precision: 14, scale: 2, null: false
+    t.string "status", default: "emitido", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chave_acesso"], name: "index_cupons_fiscais_on_chave_acesso", unique: true
+    t.index ["numero", "serie"], name: "index_cupons_fiscais_on_numero_and_serie", unique: true
+    t.index ["venda_id"], name: "index_cupons_fiscais_on_venda_id", unique: true
+    t.check_constraint "char_length(chave_acesso::text) = 44", name: "chk_cupons_fiscais_chave_length"
+    t.check_constraint "status::text = ANY (ARRAY['emitido'::character varying, 'cancelado'::character varying]::text[])", name: "chk_cupons_fiscais_status"
+    t.check_constraint "valor_total >= 0::numeric", name: "chk_cupons_fiscais_valor_total"
+  end
+
   create_table "enderecos", force: :cascade do |t|
     t.string "logradouro", null: false
     t.string "numero", null: false
@@ -191,6 +261,31 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
     t.index ["produto_id"], name: "index_estoques_on_produto_id", unique: true
     t.check_constraint "quantidade >= 0::numeric", name: "chk_estoques_quantidade"
     t.check_constraint "quantidade_minima >= 0::numeric", name: "chk_estoques_quantidade_minima"
+  end
+
+  create_table "fechamento_caixas", force: :cascade do |t|
+    t.bigint "caixa_id", null: false
+    t.bigint "funcionario_id", null: false
+    t.datetime "fechado_em", null: false
+    t.decimal "valor_informado", precision: 14, scale: 2, null: false
+    t.decimal "valor_sistema", precision: 14, scale: 2, null: false
+    t.decimal "diferenca", precision: 14, scale: 2, default: "0.0", null: false
+    t.text "observacoes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["caixa_id"], name: "index_fechamento_caixas_on_caixa_id", unique: true
+    t.index ["funcionario_id"], name: "index_fechamento_caixas_on_funcionario_id"
+    t.check_constraint "valor_informado >= 0::numeric", name: "chk_fechamento_caixas_valor_informado"
+    t.check_constraint "valor_sistema >= 0::numeric", name: "chk_fechamento_caixas_valor_sistema"
+  end
+
+  create_table "formas_pagamento", force: :cascade do |t|
+    t.string "chave", null: false
+    t.string "nome", null: false
+    t.boolean "ativo", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chave"], name: "index_formas_pagamento_on_chave", unique: true
   end
 
   create_table "fornecedores", force: :cascade do |t|
@@ -255,6 +350,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
     t.check_constraint "preco > 0::numeric", name: "chk_historico_precos_preco_positive"
   end
 
+  create_table "leituras_encerrantes", force: :cascade do |t|
+    t.bigint "bico_id", null: false
+    t.bigint "funcionario_id", null: false
+    t.decimal "encerrante_litros", precision: 14, scale: 3, null: false
+    t.datetime "lida_em", null: false
+    t.text "observacoes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bico_id", "lida_em"], name: "index_leituras_encerrantes_on_bico_id_and_lida_em", unique: true
+    t.index ["bico_id"], name: "index_leituras_encerrantes_on_bico_id"
+    t.index ["funcionario_id"], name: "index_leituras_encerrantes_on_funcionario_id"
+    t.check_constraint "encerrante_litros >= 0::numeric", name: "chk_leituras_encerrantes_valor"
+  end
+
   create_table "manutencoes", force: :cascade do |t|
     t.bigint "tanque_id"
     t.bigint "bomba_id"
@@ -275,6 +384,45 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
     t.check_constraint "finalizada_em IS NULL OR finalizada_em >= iniciada_em", name: "chk_manutencoes_periodo"
     t.check_constraint "num_nonnulls(tanque_id, bomba_id, bico_id) = 1", name: "chk_manutencoes_um_equipamento"
     t.check_constraint "status::text = ANY (ARRAY['aberta'::character varying, 'concluida'::character varying, 'cancelada'::character varying]::text[])", name: "chk_manutencoes_status"
+  end
+
+  create_table "movimentacao_estoques", force: :cascade do |t|
+    t.bigint "produto_id", null: false
+    t.bigint "funcionario_id"
+    t.string "tipo", null: false
+    t.decimal "quantidade", precision: 12, scale: 3, null: false
+    t.decimal "saldo_apos", precision: 12, scale: 3, null: false
+    t.string "origem"
+    t.text "observacoes"
+    t.datetime "movimentada_em", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["funcionario_id"], name: "index_movimentacao_estoques_on_funcionario_id"
+    t.index ["movimentada_em"], name: "index_movimentacao_estoques_on_movimentada_em"
+    t.index ["produto_id"], name: "index_movimentacao_estoques_on_produto_id"
+    t.check_constraint "quantidade <> 0::numeric", name: "chk_movimentacao_estoques_quantidade"
+    t.check_constraint "saldo_apos >= 0::numeric", name: "chk_movimentacao_estoques_saldo"
+    t.check_constraint "tipo::text = ANY (ARRAY['entrada'::character varying, 'saida'::character varying, 'ajuste'::character varying]::text[])", name: "chk_movimentacao_estoques_tipo"
+  end
+
+  create_table "movimentacao_tanques", force: :cascade do |t|
+    t.bigint "tanque_id", null: false
+    t.bigint "combustivel_id", null: false
+    t.bigint "venda_item_id"
+    t.string "tipo", null: false
+    t.decimal "volume_litros", precision: 12, scale: 3, null: false
+    t.decimal "saldo_apos_litros", precision: 12, scale: 3, null: false
+    t.datetime "movimentada_em", null: false
+    t.text "observacoes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["combustivel_id"], name: "index_movimentacao_tanques_on_combustivel_id"
+    t.index ["movimentada_em"], name: "index_movimentacao_tanques_on_movimentada_em"
+    t.index ["tanque_id"], name: "index_movimentacao_tanques_on_tanque_id"
+    t.index ["venda_item_id"], name: "index_movimentacao_tanques_on_venda_item_id"
+    t.check_constraint "saldo_apos_litros >= 0::numeric", name: "chk_movimentacao_tanques_saldo"
+    t.check_constraint "tipo::text = ANY (ARRAY['entrada'::character varying, 'saida'::character varying, 'ajuste'::character varying]::text[])", name: "chk_movimentacao_tanques_tipo"
+    t.check_constraint "volume_litros <> 0::numeric", name: "chk_movimentacao_tanques_volume"
   end
 
   create_table "nota_fiscal_itens", force: :cascade do |t|
@@ -324,6 +472,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
   create_table "pagamentos", force: :cascade do |t|
     t.bigint "venda_id", null: false
     t.bigint "caixa_id", null: false
+    t.bigint "forma_pagamento_id"
     t.string "forma", null: false
     t.decimal "valor", precision: 14, scale: 2, null: false
     t.string "status", default: "pendente", null: false
@@ -333,11 +482,32 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["caixa_id"], name: "index_pagamentos_on_caixa_id"
+    t.index ["forma_pagamento_id"], name: "index_pagamentos_on_forma_pagamento_id"
     t.index ["venda_id", "forma"], name: "index_pagamentos_on_venda_id_and_forma"
     t.index ["venda_id"], name: "index_pagamentos_on_venda_id"
     t.check_constraint "forma::text = ANY (ARRAY['dinheiro'::character varying, 'cartao_credito'::character varying, 'cartao_debito'::character varying, 'pix'::character varying, 'voucher'::character varying, 'boleto'::character varying]::text[])", name: "chk_pagamentos_forma"
     t.check_constraint "status::text = ANY (ARRAY['pendente'::character varying, 'aprovado'::character varying, 'recusado'::character varying, 'cancelado'::character varying, 'estornado'::character varying]::text[])", name: "chk_pagamentos_status"
     t.check_constraint "valor > 0::numeric", name: "chk_pagamentos_valor"
+  end
+
+  create_table "parcelas_receber", force: :cascade do |t|
+    t.bigint "conta_receber_id", null: false
+    t.integer "numero", null: false
+    t.decimal "valor", precision: 14, scale: 2, null: false
+    t.decimal "saldo", precision: 14, scale: 2, null: false
+    t.date "vencimento_em", null: false
+    t.datetime "paga_em"
+    t.string "status", default: "aberta", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conta_receber_id", "numero"], name: "index_parcelas_receber_on_conta_receber_id_and_numero", unique: true
+    t.index ["conta_receber_id"], name: "index_parcelas_receber_on_conta_receber_id"
+    t.index ["status"], name: "index_parcelas_receber_on_status"
+    t.check_constraint "numero > 0", name: "chk_parcelas_receber_numero"
+    t.check_constraint "saldo <= valor", name: "chk_parcelas_receber_saldo_valor"
+    t.check_constraint "saldo >= 0::numeric", name: "chk_parcelas_receber_saldo"
+    t.check_constraint "status::text = ANY (ARRAY['aberta'::character varying, 'paga'::character varying, 'vencida'::character varying, 'cancelada'::character varying]::text[])", name: "chk_parcelas_receber_status"
+    t.check_constraint "valor > 0::numeric", name: "chk_parcelas_receber_valor"
   end
 
   create_table "permissoes", force: :cascade do |t|
@@ -464,32 +634,49 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_19_030000) do
 
   add_foreign_key "afericoes", "bicos"
   add_foreign_key "afericoes", "funcionarios"
+  add_foreign_key "auditoria_eventos", "funcionarios"
   add_foreign_key "bicos", "bombas"
   add_foreign_key "bicos", "tanques"
   add_foreign_key "caixas", "escalas"
   add_foreign_key "caixas", "funcionarios"
+  add_foreign_key "calibracoes_bicos", "bicos"
+  add_foreign_key "calibracoes_bicos", "funcionarios"
   add_foreign_key "cargo_permissoes", "cargos"
   add_foreign_key "cargo_permissoes", "permissoes", column: "permissao_id"
   add_foreign_key "cliente_pessoas_fisicas", "clientes"
   add_foreign_key "cliente_pessoas_juridicas", "clientes"
   add_foreign_key "clientes", "enderecos"
+  add_foreign_key "contas_receber", "clientes"
+  add_foreign_key "contas_receber", "vendas"
+  add_foreign_key "cupons_fiscais", "vendas"
   add_foreign_key "escalas", "funcionarios"
   add_foreign_key "escalas", "turnos"
   add_foreign_key "estoques", "produtos"
+  add_foreign_key "fechamento_caixas", "caixas"
+  add_foreign_key "fechamento_caixas", "funcionarios"
   add_foreign_key "fornecedores", "enderecos"
   add_foreign_key "frotas", "clientes"
   add_foreign_key "funcionarios", "cargos"
   add_foreign_key "funcionarios", "enderecos"
   add_foreign_key "historico_precos", "combustiveis", column: "combustivel_id"
+  add_foreign_key "leituras_encerrantes", "bicos"
+  add_foreign_key "leituras_encerrantes", "funcionarios"
   add_foreign_key "manutencoes", "bicos"
   add_foreign_key "manutencoes", "bombas"
   add_foreign_key "manutencoes", "tanques"
+  add_foreign_key "movimentacao_estoques", "funcionarios"
+  add_foreign_key "movimentacao_estoques", "produtos"
+  add_foreign_key "movimentacao_tanques", "combustiveis", column: "combustivel_id"
+  add_foreign_key "movimentacao_tanques", "tanques"
+  add_foreign_key "movimentacao_tanques", "venda_itens", column: "venda_item_id"
   add_foreign_key "nota_fiscal_itens", "notas_fiscais", column: "nota_fiscal_id"
   add_foreign_key "nota_fiscal_itens", "produtos"
   add_foreign_key "notas_fiscais", "fornecedores", column: "fornecedor_id"
   add_foreign_key "oleos", "produtos"
   add_foreign_key "pagamentos", "caixas"
+  add_foreign_key "pagamentos", "formas_pagamento", column: "forma_pagamento_id"
   add_foreign_key "pagamentos", "vendas"
+  add_foreign_key "parcelas_receber", "contas_receber", column: "conta_receber_id"
   add_foreign_key "produtos", "categorias"
   add_foreign_key "tanques", "combustiveis", column: "combustivel_id"
   add_foreign_key "veiculos", "clientes"

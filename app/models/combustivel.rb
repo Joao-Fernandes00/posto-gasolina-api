@@ -4,6 +4,7 @@ class Combustivel < ApplicationRecord
   has_many :historico_precos, dependent: :destroy
   has_many :tanques, dependent: :restrict_with_exception
   has_many :venda_itens, class_name: "VendaItem", dependent: :restrict_with_exception
+  has_many :movimentacao_tanques, dependent: :restrict_with_exception
 
   scope :ativos, -> { where(ativo: true) }
 
