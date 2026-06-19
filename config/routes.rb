@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  get "relatorios/vendas-turno", to: "reports#vendas_turno"
+  get "relatorios/estoque-critico", to: "reports#estoque_critico"
+  get "relatorios/extrato-frota", to: "reports#extrato_frota"
+
   namespace :api do
     namespace :v1 do
       resources :tipos_combustivel, controller: :combustiveis
